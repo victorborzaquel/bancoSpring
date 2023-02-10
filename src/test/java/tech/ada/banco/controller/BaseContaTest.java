@@ -22,6 +22,8 @@ abstract class BaseContaTest {
     @Autowired
     protected ContaRepository repository;
 
+    protected int numeroContaInexistente = 9999;
+
     protected Conta criarConta(BigDecimal saldo) {
         Conta contaBase = repository.save(new Conta(ModalidadeConta.CC, null));
         contaBase.deposito(saldo);
