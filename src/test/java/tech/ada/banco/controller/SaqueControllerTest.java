@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class SaqueControllerTest extends BaseContaTest {
+class SaqueControllerTest extends BaseContaControllerTest {
 
     private final String baseUri = "/saque";
 
@@ -48,6 +48,33 @@ class SaqueControllerTest extends BaseContaTest {
         contaBase = obtemContaDoBanco(contaBase);
         assertEquals("0.00", response);
         assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP), contaBase.getSaldo());
+    }
+
+    @Test
+    void testSaqueCasaDecimal() throws Exception {
+        Conta contaBase = criarConta(BigDecimal.TEN);
+
+        String response =
+                mvc.perform(post(baseUri + "/" + contaBase.getNumeroConta())
+                                .param("valor", "3.7")
+                                .contentType(MediaType.APPLICATION_JSON))
+                        .andDo(print())
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString();
+
+        contaBase = obtemContaDoBanco(contaBase);
+        assertEquals("6.30", response);
+        assertEquals(BigDecimal.valueOf(6.3).setScale(2, RoundingMode.HALF_UP), contaBase.getSaldo());
+    }
+
+    @Test
+    void testArredondamentoParaCima() throws Exception {
+
+    }
+
+    @Test
+    void testArredondamentoParaBaixo() throws Exception {
+
     }
 
     @Test
@@ -104,24 +131,7 @@ class SaqueControllerTest extends BaseContaTest {
     }
 
     @Test
-    void testSaqueParcialQuebrado() throws Exception {
-        Conta contaBase = criarConta(BigDecimal.TEN);
-
-        String response =
-                mvc.perform(post(baseUri + "/" + contaBase.getNumeroConta())
-                                .param("valor", "3.7")
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andDo(print())
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString();
-
-        contaBase = obtemContaDoBanco(contaBase);
-        assertEquals("6.30", response);
-        assertEquals(BigDecimal.valueOf(6.3).setScale(2, RoundingMode.HALF_UP), contaBase.getSaldo());
-    }
-
-    @Test
-    void testSaqueContaInvalida() throws Exception {
+    void testSaqueContaInexistente() throws Exception {
         Conta contaBase = criarConta(BigDecimal.TEN);
         Optional<Conta> contaInexistente = repository.findContaByNumeroConta(9999);
         assertTrue(contaInexistente.isEmpty());
@@ -137,5 +147,4 @@ class SaqueControllerTest extends BaseContaTest {
         contaBase = obtemContaDoBanco(contaBase);
         assertEquals(BigDecimal.valueOf(10), contaBase.getSaldo());
     }
-
 }

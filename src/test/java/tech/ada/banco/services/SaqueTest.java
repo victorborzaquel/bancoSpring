@@ -2,6 +2,7 @@ package tech.ada.banco.services;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import tech.ada.banco.controller.BaseContaControllerTest;
 import tech.ada.banco.exceptions.ResourceNotFoundException;
 import tech.ada.banco.exceptions.SaldoInsuficienteException;
 import tech.ada.banco.model.Conta;
@@ -19,7 +20,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class SaqueTest {
+class SaqueTest extends BaseContaControllerTest {
 
     private final ContaRepository repository = Mockito.mock(ContaRepository.class);
     private final Saque saque = new Saque(repository);

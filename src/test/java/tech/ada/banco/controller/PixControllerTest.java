@@ -11,11 +11,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class PixControllerTest extends BaseContaTest{
+class PixControllerTest extends BaseContaControllerTest {
     private final String baseUri = "/pix";
 
     @Test
-    void testAllSaldoPix() throws Exception {
+    void testTransferirTodoSaldo() throws Exception {
         Conta conta = criarConta(BigDecimal.TEN);
         Conta destino = criarConta(BigDecimal.ONE);
         String uri = baseUri + "/" + conta.getNumeroConta();
@@ -32,7 +32,7 @@ class PixControllerTest extends BaseContaTest{
     }
 
     @Test
-    void testSaldoPix() throws Exception {
+    void testDestinoComSaldo() throws Exception {
         Conta conta = criarConta(BigDecimal.TEN);
         Conta destino = criarConta(BigDecimal.ONE);
         String uri = baseUri + "/" + conta.getNumeroConta();
@@ -49,7 +49,7 @@ class PixControllerTest extends BaseContaTest{
     }
 
     @Test
-    void testPixDestinoSemSaldo() throws Exception {
+    void testDestinoSemSaldo() throws Exception {
         Conta conta = criarConta(BigDecimal.TEN);
         Conta destino = criarConta(BigDecimal.ZERO);
         String uri = baseUri + "/" + conta.getNumeroConta();
@@ -82,22 +82,37 @@ class PixControllerTest extends BaseContaTest{
         assertEquals(BigDecimal.ONE, obtemContaDoBanco(destino).getSaldo());
     }
 
-//    @Test
-//    void testPixNegativo() throws Exception {
-//        Conta conta = criarConta(BigDecimal.TEN);
-//        Conta destino = criarConta(BigDecimal.ONE);
-//        String uri = baseUri + "/" + conta.getNumeroConta();
-//
-//        String response = mvc.perform(post(uri)
-//                        .param("destino", String.valueOf(destino.getNumeroConta()))
-//                        .param("valor", "-0.5"))
-//                .andExpect(status().isBadRequest())
-//                .andReturn().getResponse().getErrorMessage();
-//
-//        assertEquals("Limite acima do saldo disponível!", response);
-//        assertEquals(BigDecimal.TEN, obtemContaDoBanco(conta).getSaldo());
-//        assertEquals(BigDecimal.ONE, obtemContaDoBanco(destino).getSaldo());
-//    }
+    @Test
+    void testPixNegativo() throws Exception {
+        Conta conta = criarConta(BigDecimal.TEN);
+        Conta destino = criarConta(BigDecimal.ONE);
+        String uri = baseUri + "/" + conta.getNumeroConta();
+
+        String response = mvc.perform(post(uri)
+                        .param("destino", String.valueOf(destino.getNumeroConta()))
+                        .param("valor", "-0.5"))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertEquals("Limite acima do saldo disponível!", response);
+        assertEquals(BigDecimal.TEN, obtemContaDoBanco(conta).getSaldo());
+        assertEquals(BigDecimal.ONE, obtemContaDoBanco(destino).getSaldo());
+    }
+
+    @Test
+    void testArredondamentoParaCima() throws Exception {
+
+    }
+
+    @Test
+    void testArredondamentoParaBaixo() throws Exception {
+
+    }
+
+    @Test
+    void testComCasaDecimal() throws Exception {
+
+    }
 
     @Test
     void testContaInexistente() throws Exception {

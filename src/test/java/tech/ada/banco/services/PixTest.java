@@ -2,20 +2,21 @@ package tech.ada.banco.services;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import tech.ada.banco.controller.BaseContaControllerTest;
-import tech.ada.banco.exceptions.ResourceNotFoundException;
 import tech.ada.banco.model.Conta;
 import tech.ada.banco.model.ModalidadeConta;
 import tech.ada.banco.repository.ContaRepository;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class DepositoTest extends BaseContaControllerTest {
+class PixTest {
+
     private final ContaRepository repository = Mockito.mock(ContaRepository.class);
-    private final Deposito deposito = new Deposito(repository);
+    private final Pix pix = new Pix(repository);
 
     @Test
     void testSaqueProblemaDeBancoDeDados() {
@@ -26,7 +27,7 @@ class DepositoTest extends BaseContaControllerTest {
 
         try {
             // TODO
-            deposito.executar(1, BigDecimal.ONE);
+            pix.executar(1, 2, BigDecimal.ONE);
             fail("A conta deveria não ter sido encontrada. Por problema de conexão de banco de dados");
         } catch (RuntimeException e) {
 
@@ -37,31 +38,17 @@ class DepositoTest extends BaseContaControllerTest {
     }
 
     @Test
-    void testDepositoContaNaoEncontrada() {
-        Conta conta = criarConta(BigDecimal.valueOf(7));
-
-        assertThrows(ResourceNotFoundException.class, () -> deposito.executar(numeroContaInexistente, BigDecimal.ONE), "A conta não foi encontrada.");
-        verify(repository, times(0)).save(any());
-        assertEquals(BigDecimal.valueOf(7), conta.getSaldo());
-    }
-
-    @Test
-    void testProblemaBancoDeDados() {
+    void testOrigemInexistente() {
 
     }
 
     @Test
-    void testDepositoNegativo() {
+    void testDestinoInexistente() {
 
     }
 
     @Test
-    void testDepositoNormal() {
-
-    }
-
-    @Test
-    void testDepositoCentavos() {
+    void testValorMenorQueZero() {
 
     }
 
@@ -72,6 +59,31 @@ class DepositoTest extends BaseContaControllerTest {
 
     @Test
     void testArredondamentoParaBaixo() {
+
+    }
+
+    @Test
+    void testValorComCasaDecimal() {
+
+    }
+
+    @Test
+    void testOrigemComSaldo() {
+
+    }
+
+    @Test
+    void testOrigemSemSaldo() {
+
+    }
+
+    @Test
+    void testDestinoSemSaldo() {
+
+    }
+
+    @Test
+    void testDestinoComSaldo() {
 
     }
 }

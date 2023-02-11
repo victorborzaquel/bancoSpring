@@ -1,4 +1,4 @@
-package tech.ada.banco.controller;
+package tech.ada.banco.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -9,12 +9,14 @@ import tech.ada.banco.model.ModalidadeConta;
 import tech.ada.banco.repository.ContaRepository;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-abstract class BaseContaTest {
+public abstract class BaseContaTest {
 
     @Autowired
     protected MockMvc mvc;
@@ -24,12 +26,13 @@ abstract class BaseContaTest {
 
     protected int numeroContaInexistente = 9999;
 
-    protected Conta criarConta(BigDecimal saldo) {
-        Conta contaBase = repository.save(new Conta(ModalidadeConta.CC, null));
-        contaBase.deposito(saldo);
-        contaBase = repository.save(contaBase);
-        assertEquals(saldo, contaBase.getSaldo());
-        return contaBase;
+    protected Conta criarConta(double valor, int numeroConta) {
+        Conta conta = new Conta(ModalidadeConta.CC, null);
+        conta.deposito(BigDecimal.valueOf(valor));
+        when(repository.findContaByNumeroConta(numeroConta)).thenReturn(Optional.of(conta));
+        assertEquals(BigDecimal.valueOf(valor), conta.getSaldo(),
+                "O saldo inicial da conta deve ser alterado para " + valor);
+        return conta;
     }
 
     protected Conta obtemContaDoBanco(Conta contaBase) {
