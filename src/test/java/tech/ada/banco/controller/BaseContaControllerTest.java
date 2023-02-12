@@ -25,15 +25,15 @@ public abstract class BaseContaControllerTest {
     protected int numeroContaInexistente = 9999;
 
     protected Conta criarConta(BigDecimal saldo) {
-        Conta contaBase = repository.save(new Conta(ModalidadeConta.CC, null));
-        contaBase.deposito(saldo);
-        contaBase = repository.save(contaBase);
-        assertEquals(saldo, contaBase.getSaldo());
-        return contaBase;
+        Conta conta = repository.save(new Conta(ModalidadeConta.CC, null));
+        conta.deposito(saldo);
+        conta = repository.save(conta);
+        assertEquals(saldo, conta.getSaldo());
+        return conta;
     }
 
-    protected Conta obtemContaDoBanco(Conta contaBase) {
-        return repository.findContaByNumeroConta(contaBase.getNumeroConta())
+    protected Conta obtemContaDoBanco(Conta conta) {
+        return repository.findContaByNumeroConta(conta.getNumeroConta())
                 .orElseThrow(NullPointerException::new);
     }
 
