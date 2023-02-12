@@ -1,7 +1,6 @@
 package tech.ada.banco.controller;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
 import tech.ada.banco.model.Conta;
 
 import java.math.BigDecimal;
@@ -11,7 +10,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class SaqueControllerTest extends BaseContaControllerTest {
@@ -19,132 +17,109 @@ class SaqueControllerTest extends BaseContaControllerTest {
     private final String baseUri = "/saque";
 
     @Test
-    void testSaqueSemSaldo() throws Exception {
-        Conta contaBase = criarConta(BigDecimal.ZERO);
-
-        String response =
-                mvc.perform(post(baseUri + "/" + contaBase.getNumeroConta())
-                                .param("valor", "10")
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andDo(print())
-                        .andExpect(status().isBadRequest())
-                        .andReturn().getResponse().getErrorMessage();
-
-        assertEquals("Limite acima do saldo disponível!", response);
-    }
-
-    @Test
     void testSaqueSaldoTotal() throws Exception {
-        Conta contaBase = criarConta(BigDecimal.TEN);
+        Conta conta = criarConta(BigDecimal.TEN);
+        String uri = baseUri + "/" + conta.getNumeroConta();
 
-        String response =
-                mvc.perform(post(baseUri + "/" + contaBase.getNumeroConta())
-                                .param("valor", "10")
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andDo(print())
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString();
+        String response = mvc.perform(post(uri).param("valor", "10"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
 
-        contaBase = obtemContaDoBanco(contaBase);
         assertEquals("0.00", response);
-        assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP), contaBase.getSaldo());
+        assertEquals(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP), obtemContaDoBanco(conta).getSaldo());
     }
 
     @Test
     void testSaqueCasaDecimal() throws Exception {
-        Conta contaBase = criarConta(BigDecimal.TEN);
+        Conta conta = criarConta(BigDecimal.TEN);
+        String uri = baseUri + "/" + conta.getNumeroConta();
 
-        String response =
-                mvc.perform(post(baseUri + "/" + contaBase.getNumeroConta())
-                                .param("valor", "3.7")
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andDo(print())
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString();
+        String response = mvc.perform(post(uri).param("valor", "3.7"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
 
-        contaBase = obtemContaDoBanco(contaBase);
         assertEquals("6.30", response);
-        assertEquals(BigDecimal.valueOf(6.3).setScale(2, RoundingMode.HALF_UP), contaBase.getSaldo());
+        assertEquals(BigDecimal.valueOf(6.3).setScale(2, RoundingMode.HALF_UP), obtemContaDoBanco(conta).getSaldo());
     }
 
     @Test
     void testArredondamentoParaCima() throws Exception {
+        Conta conta = criarConta(BigDecimal.valueOf(4));
+        String uri = baseUri + "/" + conta.getNumeroConta();
 
+        String response = mvc.perform(post(uri).param("valor", "3.005"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertEquals("0.99", response);
+        assertEquals(BigDecimal.valueOf(0.99).setScale(2, RoundingMode.HALF_UP), obtemContaDoBanco(conta).getSaldo());
     }
 
     @Test
     void testArredondamentoParaBaixo() throws Exception {
+        Conta conta = criarConta(BigDecimal.valueOf(4));
+        String uri = baseUri + "/" + conta.getNumeroConta();
 
+        String response = mvc.perform(post(uri).param("valor", "3.004"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertEquals("1.00", response);
+        assertEquals(BigDecimal.valueOf(1).setScale(2, RoundingMode.HALF_UP), obtemContaDoBanco(conta).getSaldo());
     }
 
     @Test
     void testSaqueSaldoInsuficiente() throws Exception {
-        Conta contaBase = criarConta(BigDecimal.ONE);
+        Conta conta = criarConta(BigDecimal.ONE);
+        String uri = baseUri + "/" + conta.getNumeroConta();
 
-        String response =
-                mvc.perform(post(baseUri + "/" + contaBase.getNumeroConta())
-                                .param("valor", "10")
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andDo(print())
-                        .andExpect(status().isBadRequest())
-                        .andReturn().getResponse().getErrorMessage();
+        String response = mvc.perform(post(uri).param("valor", "10"))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
 
-        contaBase = obtemContaDoBanco(contaBase);
         assertEquals("Limite acima do saldo disponível!", response);
-        assertEquals(BigDecimal.ONE, contaBase.getSaldo());
-
+        assertEquals(BigDecimal.ONE, obtemContaDoBanco(conta).getSaldo());
     }
 
     @Test
     void testSaqueNegativo() throws Exception {
-        Conta contaBase = criarConta(BigDecimal.ONE);
+        Conta conta = criarConta(BigDecimal.ONE);
+        String uri = baseUri + "/" + conta.getNumeroConta();
 
-        String response =
-                mvc.perform(post(baseUri + "/" + contaBase.getNumeroConta())
-                                .param("valor", "-10")
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andDo(print())
-                        .andExpect(status().isBadRequest())
-                        .andReturn().getResponse().getErrorMessage();
+        String response = mvc.perform(post(uri).param("valor", "-10"))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
 
-        contaBase = obtemContaDoBanco(contaBase);
         assertEquals("Valor informado está inválido.", response);
-        assertEquals(BigDecimal.ONE, contaBase.getSaldo());
-
+        assertEquals(BigDecimal.ONE, obtemContaDoBanco(conta).getSaldo());
     }
 
     @Test
     void testSaqueParcial() throws Exception {
-        Conta contaBase = criarConta(BigDecimal.TEN);
+        Conta conta = criarConta(BigDecimal.TEN);
+        String uri = baseUri + "/" + conta.getNumeroConta();
 
-        String response =
-                mvc.perform(post(baseUri + "/" + contaBase.getNumeroConta())
-                                .param("valor", "3")
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andDo(print())
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString();
+        String response = mvc.perform(post(uri).param("valor", "3"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
 
-        contaBase = obtemContaDoBanco(contaBase);
         assertEquals("7.00", response);
-        assertEquals(BigDecimal.valueOf(7).setScale(2, RoundingMode.HALF_UP), contaBase.getSaldo());
+        assertEquals(BigDecimal.valueOf(7).setScale(2, RoundingMode.HALF_UP), obtemContaDoBanco(conta).getSaldo());
     }
 
     @Test
     void testSaqueContaInexistente() throws Exception {
-        Conta contaBase = criarConta(BigDecimal.TEN);
+        Conta conta = criarConta(BigDecimal.TEN);
+        String uri = baseUri + "/" + numeroContaInexistente;
+
         Optional<Conta> contaInexistente = repository.findContaByNumeroConta(9999);
         assertTrue(contaInexistente.isEmpty());
 
-        String response =
-                mvc.perform(post(baseUri + "/9999")
-                                .param("valor", "3.7")
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andDo(print())
-                        .andExpect(status().isNotFound())
-                        .andReturn().getResponse().getContentAsString();
+        String response = mvc.perform(post(uri).param("valor", "3.7"))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getErrorMessage();
 
-        contaBase = obtemContaDoBanco(contaBase);
-        assertEquals(BigDecimal.valueOf(10), contaBase.getSaldo());
+        assertEquals("Recurso não encontrado.", response);
+        assertEquals(BigDecimal.valueOf(10), obtemContaDoBanco(conta).getSaldo());
     }
 }
