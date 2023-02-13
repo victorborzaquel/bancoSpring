@@ -8,7 +8,8 @@ import tech.ada.banco.model.Conta;
 import tech.ada.banco.repository.ContaRepository;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+
+import static tech.ada.banco.utils.Format.format;
 
 @Service
 @Slf4j
@@ -21,8 +22,6 @@ public class Pix {
     }
 
     public BigDecimal executar(int contaOrigem, int contaDestino, BigDecimal valor) {
-        valor = valor.setScale(2, RoundingMode.HALF_UP);
-
         Conta origem = repository.findContaByNumeroConta(contaOrigem).orElseThrow(ResourceNotFoundException::new);
         Conta destino = repository.findContaByNumeroConta(contaDestino).orElseThrow(ResourceNotFoundException::new);
 
@@ -30,9 +29,9 @@ public class Pix {
             throw new ValorInvalidoException();
         }
 
-        origem.saque(valor);
+        origem.saque(format(valor));
         repository.save(origem);
-        destino.deposito(valor);
+        destino.deposito(format(valor));
         repository.save(destino);
         log.info("Operação realizada com sucesso.");
         return origem.getSaldo();

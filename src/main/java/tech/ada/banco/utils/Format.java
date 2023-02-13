@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class Format {
+    private Format() {
+    }
+
     public static BigDecimal format(double value) {
         return format(BigDecimal.valueOf(value));
     }

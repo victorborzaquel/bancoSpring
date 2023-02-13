@@ -1,25 +1,14 @@
 package tech.ada.banco.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import tech.ada.banco.exceptions.SaldoInsuficienteException;
 import tech.ada.banco.exceptions.ValorInvalidoException;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+
+import static tech.ada.banco.utils.Format.format;
 
 @Entity
 @Table(name = "CONTA")
@@ -54,7 +43,7 @@ public class Conta {
 
     protected Conta() {
         agencia = "0001";
-        saldo = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        saldo = format(0);
     }
 
     public ModalidadeConta getTipo() {
@@ -66,18 +55,14 @@ public class Conta {
     }
 
     public void deposito(BigDecimal valor) {
-        valor = valor.setScale(2, RoundingMode.HALF_UP);
-
         if (valor.compareTo(BigDecimal.ZERO) < 0) {
             throw new ValorInvalidoException();
         }
 
-        saldo = saldo.add(valor);
+        saldo = saldo.add(format(valor));
     }
 
     public void saque(BigDecimal valor) {
-        valor = valor.setScale(2, RoundingMode.HALF_UP);
-
         if (valor.compareTo(BigDecimal.ZERO) < 0) {
             throw new ValorInvalidoException();
         }
@@ -85,7 +70,7 @@ public class Conta {
         if (valor.compareTo(saldo) > 0) {
             throw new SaldoInsuficienteException();
         } else {
-            saldo = saldo.subtract(valor);
+            saldo = saldo.subtract(format(valor));
         }
     }
 

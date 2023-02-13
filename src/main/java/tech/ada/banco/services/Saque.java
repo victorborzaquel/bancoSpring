@@ -7,7 +7,8 @@ import tech.ada.banco.model.Conta;
 import tech.ada.banco.repository.ContaRepository;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+
+import static tech.ada.banco.utils.Format.format;
 
 @Service
 @Slf4j
@@ -20,11 +21,9 @@ public final class Saque {
     }
 
     public BigDecimal executar(int numeroConta, BigDecimal valor) {
-        valor = valor.setScale(2, RoundingMode.HALF_UP);
-
         Conta conta = repository.findContaByNumeroConta(numeroConta).orElseThrow(ResourceNotFoundException::new);
 
-        conta.saque(valor);
+        conta.saque(format(valor));
         repository.save(conta);
         log.info("O saldo resultante após o saque é de R$ {}", conta.getSaldo());
         return conta.getSaldo();
