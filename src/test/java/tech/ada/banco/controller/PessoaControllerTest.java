@@ -1,19 +1,14 @@
 package tech.ada.banco.controller;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import tech.ada.banco.utils.Uri;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class PessoaControllerTest extends BasePessoaControllerTest {
-    private final String baseUri = "/pessoas";
-
-    @AfterEach
-    void tearDown() {
-        repository.deleteAll();
-    }
+    private final Uri uri = new Uri("/pessoas");
 
     // TODO: Como fazer o toString de uma pessoa?
 //    @Test
@@ -44,15 +39,16 @@ class PessoaControllerTest extends BasePessoaControllerTest {
     @Test
     void testGetPessoaInexistente() throws Exception {
         criarPessoa("Victor");
-        assertEquals(1, repository.findAll().size());
-        String uri = baseUri + "/" + idPessoaInexistente;
 
-        String response = mvc.perform(get(uri)).andExpect(status().isNotFound())
+        assertIdPessoaInexistente();
+
+        final String response = mvc.perform(get(uri.criar(idPessoaInexistente)))
+                .andExpect(status().isNotFound())
                 .andReturn().getResponse().getErrorMessage();
 
         assertEquals("Recurso não encontrado.", response);
     }
-        // TODO: Implementar testes de atualização e criação de pessoa.
+        // TODO: Como transferir Json para o controller.
 
 //    @Test
 //    void testAtualizaPessoa() throws Exception {

@@ -9,6 +9,8 @@ import tech.ada.banco.repository.PessoaRepository;
 
 import java.time.LocalDate;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 public abstract class BasePessoaControllerTest {
@@ -23,5 +25,9 @@ public abstract class BasePessoaControllerTest {
 
     protected Pessoa criarPessoa(String nome) {
         return repository.save(new Pessoa(nome, "123.456.789.00",  LocalDate.of(2000, 1, 1)));
+    }
+
+    protected void assertIdPessoaInexistente() {
+        assertTrue(repository.findById(idPessoaInexistente).isEmpty());
     }
 }

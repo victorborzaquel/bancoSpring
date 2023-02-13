@@ -6,6 +6,7 @@ import tech.ada.banco.exceptions.SaldoInsuficienteException;
 import tech.ada.banco.exceptions.ValorInvalidoException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,41 +23,46 @@ class ContaTest {
 
     @Test
     void testDeposito() {
+        BigDecimal saldo = BigDecimal.valueOf(10).setScale(2, RoundingMode.HALF_UP);
         conta.deposito(BigDecimal.TEN);
 
-        assertEquals(BigDecimal.TEN, conta.getSaldo());
+        assertEquals(saldo, conta.getSaldo());
     }
 
     @Test
     void testDepositoValorMenorQueZero() {
+        BigDecimal saldo = BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP);
         BigDecimal valor = BigDecimal.valueOf(-1);
 
         assertThrows(ValorInvalidoException.class, () -> conta.deposito(valor));
-        assertEquals(BigDecimal.ZERO, conta.getSaldo());
+        assertEquals(saldo, conta.getSaldo());
     }
 
     @Test
     void testSaque() {
+        BigDecimal saldo = BigDecimal.valueOf(4).setScale(2, RoundingMode.HALF_UP);
         conta.deposito(BigDecimal.valueOf(7));
         conta.saque(BigDecimal.valueOf(3));
 
-        assertEquals(BigDecimal.valueOf(4), conta.getSaldo());
+        assertEquals(saldo, conta.getSaldo());
     }
 
     @Test
     void testSaqueValorMenorQueZero() {
+        BigDecimal saldo = BigDecimal.valueOf(7).setScale(2, RoundingMode.HALF_UP);
         conta.deposito(BigDecimal.valueOf(7));
         BigDecimal valor = BigDecimal.valueOf(-1);
 
         assertThrows(ValorInvalidoException.class, () -> conta.saque(valor));
-        assertEquals(BigDecimal.valueOf(7), conta.getSaldo());
+        assertEquals(saldo, conta.getSaldo());
     }
 
     @Test
     void testSaqueSaldoInsuficiente() {
+        BigDecimal saldo = BigDecimal.valueOf(0).setScale(2, RoundingMode.HALF_UP);
         BigDecimal valor = BigDecimal.valueOf(3);
 
         assertThrows(SaldoInsuficienteException.class, () -> conta.saque(valor));
-        assertEquals(BigDecimal.ZERO, conta.getSaldo());
+        assertEquals(saldo, conta.getSaldo());
     }
 }

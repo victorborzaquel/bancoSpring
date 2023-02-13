@@ -9,8 +9,10 @@ import tech.ada.banco.model.ModalidadeConta;
 import tech.ada.banco.repository.ContaRepository;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -28,8 +30,16 @@ public abstract class BaseContaControllerTest {
         Conta conta = repository.save(new Conta(ModalidadeConta.CC, null));
         conta.deposito(saldo);
         conta = repository.save(conta);
-        assertEquals(saldo, conta.getSaldo());
+        assertEquals(saldo.setScale(2, RoundingMode.HALF_UP), conta.getSaldo());
         return conta;
+    }
+
+    protected Conta criarConta(int saldo) {
+        return criarConta(BigDecimal.valueOf(saldo));
+    }
+
+    protected Conta criarConta(double saldo) {
+        return criarConta(BigDecimal.valueOf(saldo));
     }
 
     protected Conta obtemContaDoBanco(Conta conta) {
@@ -37,4 +47,7 @@ public abstract class BaseContaControllerTest {
                 .orElseThrow(NullPointerException::new);
     }
 
+    protected void assertNumeroContaInexistente() {
+        assertTrue(repository.findContaByNumeroConta(numeroContaInexistente).isEmpty());
+    }
 }

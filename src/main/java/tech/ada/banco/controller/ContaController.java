@@ -45,6 +45,6 @@ public class ContaController {
     @DeleteMapping("{conta}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void deleteConta(@PathVariable int conta) {
-        repository.deleteById(conta);
+        repository.deleteById(getConta(conta).getNumeroConta());
     }
 }

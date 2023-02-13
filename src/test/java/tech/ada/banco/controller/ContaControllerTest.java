@@ -1,25 +1,18 @@
 package tech.ada.banco.controller;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import tech.ada.banco.model.Conta;
-import tech.ada.banco.model.ModalidadeConta;
-
-import java.math.BigDecimal;
+import tech.ada.banco.utils.Uri;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ContaControllerTest extends BaseContaControllerTest {
 
-    private final String baseUri = "/contas";
-
-    @AfterEach
-    void tearDown() {
-        repository.deleteAll();
-    }
+    private final Uri uri = new Uri("/contas");
 
     // TODO: como fazer o toString de uma conta?
 //    @Test
@@ -48,9 +41,9 @@ class ContaControllerTest extends BaseContaControllerTest {
 
     @Test
     void testGetContaInexistente() throws Exception {
-        String uri = baseUri + "/" + numeroContaInexistente;
+        assertNumeroContaInexistente();
 
-        String response = mvc.perform(get(uri))
+        final String response = mvc.perform(get(uri.criar(numeroContaInexistente)))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse().getErrorMessage();
 
@@ -63,44 +56,44 @@ class ContaControllerTest extends BaseContaControllerTest {
 //    void testCreateConta() throws Exception {
 //        Pessoa pessoa = new Pessoa("Victor", "12345", LocalDate.of(2000, 1, 1));
 //
-//        String response = mvc.perform(get(baseUri)
-//                        .param("modalidade", ModalidadeConta.CC.toString())
+//        String response = mvc.perform(post(baseUri)
 //                        .contentType(MediaType.APPLICATION_JSON)
 //                        .content(pessoa.toString()))
 //                .andExpect(status().isOk())
 //                .andReturn().getResponse().getContentAsString();
 //
+//        System.out.println(response);
+//        assertEquals(1, repository.findAll().size());
+//    }
+
+    // TODO: Como verificar se o objeto foi criado no banco?
+//    @Test
+//    void testCreateContaSemPessoa() throws Exception {
+//        mvc.perform(post(uri.base()).param("modalidade", ModalidadeConta.CC.toString()))
+//                .andExpect(status().isOk());
+//
 //        assertEquals(1, repository.findAll().size());
 //    }
 
     @Test
-    void testCreateContaSemPessoa() throws Exception {
-        mvc.perform(post(baseUri).param("modalidade", ModalidadeConta.CC.toString()))
-                .andExpect(status().isOk());
-
-        assertEquals(1, repository.findAll().size());
-    }
-
-    @Test
     void testDeleteConta() throws Exception {
-        Conta conta = criarConta(BigDecimal.TEN);
-        String uri = baseUri + "/" + conta.getNumeroConta();
+        final Conta conta = criarConta(10);
 
-        mvc.perform(delete(uri)).andExpect(status().isAccepted());
+        mvc.perform(delete(uri.criar(conta))).andExpect(status().isAccepted());
 
         assertThrows(NullPointerException.class, () -> obtemContaDoBanco(conta));
     }
 
-    // TODO: Erro ao deletar conta inexistente
-//    @Test
-//    void testDeleteContaInexistente() throws Exception {
-//        Conta conta = criarConta(BigDecimal.TEN);
-//        String uri = baseUri + "/" + numeroContaInexistente;
-//
-//        String response = mvc.perform(delete(uri)).andExpect(status().isNotFound())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        assertEquals("Recurso não encontrado.", response);
-//        assertEquals(conta, obtemContaDoBanco(conta));
-//    }
+    @Test
+    void testDeleteContaInexistente() throws Exception {
+        criarConta(10);
+
+        assertNumeroContaInexistente();
+
+        final String response = mvc.perform(delete(uri.criar(numeroContaInexistente)))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertEquals("Recurso não encontrado.", response);
+    }
 }
