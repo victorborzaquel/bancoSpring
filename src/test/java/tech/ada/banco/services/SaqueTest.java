@@ -6,9 +6,9 @@ import tech.ada.banco.exceptions.SaldoInsuficienteException;
 import tech.ada.banco.model.Conta;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static tech.ada.banco.utils.Format.format;
@@ -69,7 +69,7 @@ class SaqueTest extends BaseContaTest {
         assertThrows(SaldoInsuficienteException.class, () -> saque.executar(numeroContaOrigem, VALOR_SAQUE));
 
         verify(repository, times(0)).save(any());
-        assertEquals(format(5), conta.getSaldo().setScale(2, RoundingMode.HALF_UP), "O saldo da conta não se alterou");
+        assertEquals(format(5), conta.getSaldo(), "O saldo da conta não se alterou");
     }
 
     @Test

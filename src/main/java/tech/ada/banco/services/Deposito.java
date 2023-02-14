@@ -8,8 +8,6 @@ import tech.ada.banco.repository.ContaRepository;
 
 import java.math.BigDecimal;
 
-import static tech.ada.banco.utils.Format.format;
-
 @Service
 @Slf4j
 public class Deposito {
@@ -22,7 +20,7 @@ public class Deposito {
 
     public BigDecimal executar(int numeroConta, BigDecimal valor) {
         Conta conta = repository.findContaByNumeroConta(numeroConta).orElseThrow(ResourceNotFoundException::new);
-        conta.deposito(format(valor));
+        conta.deposito(valor);
         log.info("O saldo da conta é de: R$ {}", conta.getSaldo());
         repository.save(conta);
         return conta.getSaldo();

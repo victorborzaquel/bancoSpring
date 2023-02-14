@@ -2,12 +2,14 @@ package tech.ada.banco.controller;
 
 import org.junit.jupiter.api.Test;
 import tech.ada.banco.model.Conta;
+import tech.ada.banco.model.Pessoa;
 import tech.ada.banco.utils.Uri;
+
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ContaControllerTest extends BaseContaControllerTest {
@@ -50,13 +52,19 @@ class ContaControllerTest extends BaseContaControllerTest {
         assertEquals("Recurso não encontrado.", response);
     }
 
+    @Test
+    void test() {
+        Pessoa pessoa = new Pessoa("Victor", "12345", LocalDate.of(2000, 1, 1));
 
-    // TODO: Como transferir Json para o controller?
+//        String response = mvc.perform(post(uri));
+    }
+
+    //     TODO: Como transferir Json para o controller?
 //    @Test
 //    void testCreateConta() throws Exception {
 //        Pessoa pessoa = new Pessoa("Victor", "12345", LocalDate.of(2000, 1, 1));
 //
-//        String response = mvc.perform(post(baseUri)
+//        String response = mvc.perform(post(uri)
 //                        .contentType(MediaType.APPLICATION_JSON)
 //                        .content(pessoa.toString()))
 //                .andExpect(status().isOk())

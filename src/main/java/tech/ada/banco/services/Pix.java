@@ -9,8 +9,6 @@ import tech.ada.banco.repository.ContaRepository;
 
 import java.math.BigDecimal;
 
-import static tech.ada.banco.utils.Format.format;
-
 @Service
 @Slf4j
 public class Pix {
@@ -29,9 +27,9 @@ public class Pix {
             throw new ValorInvalidoException();
         }
 
-        origem.saque(format(valor));
+        origem.saque(valor);
         repository.save(origem);
-        destino.deposito(format(valor));
+        destino.deposito(valor);
         repository.save(destino);
         log.info("Operação realizada com sucesso.");
         return origem.getSaldo();
