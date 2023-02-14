@@ -78,4 +78,18 @@ public class Conta {
         return numeroConta;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Conta conta = (Conta) o;
+
+        return numeroConta == conta.numeroConta;
+    }
+
+    @Override
+    public int hashCode() {
+        return numeroConta;
+    }
 }

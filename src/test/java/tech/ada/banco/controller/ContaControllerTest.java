@@ -1,45 +1,54 @@
 package tech.ada.banco.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import tech.ada.banco.model.Conta;
-import tech.ada.banco.model.Pessoa;
+import tech.ada.banco.model.ModalidadeConta;
 import tech.ada.banco.utils.Uri;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ContaControllerTest extends BaseContaControllerTest {
 
     private final Uri uri = new Uri("/contas");
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    // TODO: como fazer o toString de uma conta?
-//    @Test
-//    void testGetContaExistente() throws Exception {
-//        Conta conta = criarConta(BigDecimal.TEN);
-//        String uri = baseUri + "/" + conta.getNumeroConta();
-//
-//        String response = mvc.perform(get(uri))
-//                .andExpect(status().isOk())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        assertEquals(conta.toString(), response);
-//    }
-//    @Test
-//    void testGetContas() throws Exception {
-//        criarConta(BigDecimal.TEN);
-//        criarConta(BigDecimal.ONE);
-//
-//        String response = mvc.perform(get(baseUri))
-//                .andExpect(status().isOk())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        String expected = "[{\"numeroConta\":10000,\"tipo\":\"CC\",\"saldo\":10,\"agencia\":\"0001\",\"titular\":null},{\"numeroConta\":10001,\"tipo\":\"CC\",\"saldo\":1,\"agencia\":\"0001\",\"titular\":null}]";
-//        assertEquals(expected, response);
-//    }
+
+    @Test
+    void testGetContaExistente() throws Exception {
+        final Conta conta = criarConta(BigDecimal.TEN);
+
+        final String response = mvc.perform(get(uri.base()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        final Conta contaResposta = mapper.readValue(response, Conta.class);
+
+        assertEquals(conta, contaResposta);
+    }
+
+    @Test
+    void testGetContas() throws Exception {
+        final Conta conta1 = criarConta(BigDecimal.TEN);
+        final Conta conta2 = criarConta(BigDecimal.ONE);
+
+        final String response = mvc.perform(get(uri.base()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        final List<Conta> contasResposta = List.of(mapper.readValue(response, Conta[].class));
+
+        assertTrue(contasResposta.contains(conta1));
+        assertTrue(contasResposta.contains(conta2));
+        assertEquals(conta1, obtemContaDoBanco(conta1));
+        assertEquals(conta2, obtemContaDoBanco(conta2));
+    }
 
     @Test
     void testGetContaInexistente() throws Exception {
@@ -53,35 +62,16 @@ class ContaControllerTest extends BaseContaControllerTest {
     }
 
     @Test
-    void test() {
-        Pessoa pessoa = new Pessoa("Victor", "12345", LocalDate.of(2000, 1, 1));
+    void testCreateContaSemPessoa() throws Exception {
+        String response = mvc.perform(post(uri.base())
+                        .param("modalidade", ModalidadeConta.CC.toString()))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
 
-//        String response = mvc.perform(post(uri));
+        final Conta conta = mapper.readValue(response, Conta.class);
+
+        assertEquals(ModalidadeConta.CC, conta.getTipo());
     }
-
-    //     TODO: Como transferir Json para o controller?
-//    @Test
-//    void testCreateConta() throws Exception {
-//        Pessoa pessoa = new Pessoa("Victor", "12345", LocalDate.of(2000, 1, 1));
-//
-//        String response = mvc.perform(post(uri)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(pessoa.toString()))
-//                .andExpect(status().isOk())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        System.out.println(response);
-//        assertEquals(1, repository.findAll().size());
-//    }
-
-    // TODO: Como verificar se o objeto foi criado no banco?
-//    @Test
-//    void testCreateContaSemPessoa() throws Exception {
-//        mvc.perform(post(uri.base()).param("modalidade", ModalidadeConta.CC.toString()))
-//                .andExpect(status().isOk());
-//
-//        assertEquals(1, repository.findAll().size());
-//    }
 
     @Test
     void testDeleteConta() throws Exception {

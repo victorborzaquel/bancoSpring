@@ -30,4 +30,9 @@ public abstract class BasePessoaControllerTest {
     protected void assertIdPessoaInexistente() {
         assertTrue(repository.findById(idPessoaInexistente).isEmpty());
     }
+
+    protected Pessoa obtemPessoaDoBanco(Pessoa pessoa) {
+        return repository.findById(pessoa.getId().intValue())
+                .orElseThrow(NullPointerException::new);
+    }
 }

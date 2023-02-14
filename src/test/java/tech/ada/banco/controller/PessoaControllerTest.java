@@ -8,45 +8,50 @@ import tech.ada.banco.model.Pessoa;
 import tech.ada.banco.utils.Uri;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class PessoaControllerTest extends BasePessoaControllerTest {
     private final Uri uri = new Uri("/pessoas");
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    // TODO: Como fazer o toString de uma pessoa?
-//    @Test
-//    void testGetPessoas() throws Exception {
-//        criarPessoa("João");
-//
-//        String response = mvc.perform(get(baseUri)).andExpect(status().isOk())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        assertEquals(1, repository.findAll().size());
-//        String expected = "[{\"id\":100,\"dataNascimento\":\"2000-01-01\",\"cpf\":\"123.456.789.00\",\"telefone\":null,\"nome\":\"JoÃ£o\"}]";
-//        assertEquals(expected, response);
-//    }
-//
-//    @Test
-//    void testGetPessoa() throws Exception {
-//        Pessoa pessoa = criarPessoa("João");
-//        assertEquals(1, repository.findAll().size());
-//        String uri = baseUri + "/" + pessoa.getId();
-//
-//        String response = mvc.perform(get(uri)).andExpect(status().isOk())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        String expected = "{\"id\":100,\"dataNascimento\":\"2000-01-01\",\"cpf\":\"123.456.789.00\",\"telefone\":null,\"nome\":\"JoÃ£o\"}";
-//        assertEquals(expected, response);
-//    }
+    @Test
+    void testGetPessoas() throws Exception {
+        final Pessoa pessoa1 = criarPessoa("Victor");
+        final Pessoa pessoa2 = criarPessoa("Hugo");
+
+        final String response = mvc.perform(get(uri.base())).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        final List<Pessoa> pessoaResposta = List.of(mapper.readValue(response, Pessoa[].class));
+
+        assertTrue(pessoaResposta.contains(pessoa1));
+        assertTrue(pessoaResposta.contains(pessoa2));
+        assertEquals(pessoa1, obtemPessoaDoBanco(pessoa1));
+        assertEquals(pessoa2, obtemPessoaDoBanco(pessoa2));
+    }
+
+    @Test
+    void testGetPessoa() throws Exception {
+        final Pessoa pessoa = criarPessoa("Victor");
+
+        final String response = mvc.perform(get(uri.criar(pessoa.getId())))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        final Pessoa pessoaResposta = mapper.readValue(response, Pessoa.class);
+
+        assertEquals(pessoa, pessoaResposta);
+        assertEquals(pessoa, obtemPessoaDoBanco(pessoa));
+    }
 
 
     @Test
-    void test() throws Exception {
+    void testCreatePessoa() throws Exception {
         final Pessoa pessoa = new Pessoa("Victor", "12345", LocalDate.of(2000, 1, 1));
 
         final String response = mvc.perform(post(uri.base())
@@ -56,7 +61,7 @@ class PessoaControllerTest extends BasePessoaControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         final Pessoa pessoaResposta = mapper.readValue(response, Pessoa.class);
-        System.out.println(response);
+
     }
 
     @Test
@@ -71,34 +76,40 @@ class PessoaControllerTest extends BasePessoaControllerTest {
 
         assertEquals("Recurso não encontrado.", response);
     }
-        // TODO: Como transferir Json para o controller.
 
-//    @Test
-//    void testAtualizaPessoa() throws Exception {
-//        Pessoa pessoa = criarPessoa("João");
-//        assertEquals(1, repository.findAll().size());
-//        String uri = baseUri + "/" + pessoa.getId();
-//
-//        String response = mvc.perform(put(baseUri).contentType()).andExpect(status().isAccepted())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        assertEquals("Recurso não encontrado.", response);
-//    }
-//
-//    @Test
-//    void testAtualizaPessoaInexistente() throws Exception {
-//        Pessoa pessoa = new Pessoa("João", "123.456.789.00", LocalDate.of(2000, 1, 1));
-//        assertEquals(1, repository.findAll().size());
-//        String uri = baseUri + "/" + pessoa.getId();
-//
-//        String response = mvc.perform(put(baseUri).contentType()).andExpect(status().isAccepted())
-//                .andReturn().getResponse().getContentAsString();
-//
-//        assertEquals("Recurso não encontrado.", response);
-//    }
-//
-//    @Test
-//    void testCreatePessoa() throws Exception {
-//
-//    }
+    @Test
+    void testAtualizaPessoa() throws Exception {
+        final Pessoa pessoa = criarPessoa("Victor");
+
+        Pessoa pessoa1 = new Pessoa("Hugo", pessoa.getCpf(), pessoa.getDataNascimento());
+        pessoa1.setId(pessoa.getId());
+
+        final String response = mvc.perform(put(uri.base())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(pessoa1)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        final Pessoa pessoaResposta = mapper.readValue(response, Pessoa.class);
+
+        assertEquals(pessoa, pessoaResposta);
+    }
+
+    @Test
+    void testAtualizaPessoaInexistente() throws Exception {
+        Pessoa pessoa = criarPessoa("Victor");
+
+        Pessoa pessoa1 = new Pessoa("Hugo", pessoa.getCpf(), pessoa.getDataNascimento());
+
+        assertIdPessoaInexistente();
+
+        final String response = mvc.perform(put(uri.base())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(pessoa1)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertEquals("Recurso não encontrado.", response);
+    }
+
 }
